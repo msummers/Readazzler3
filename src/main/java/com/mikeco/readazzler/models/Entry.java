@@ -11,23 +11,28 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
 import com.rometools.rome.feed.synd.SyndContent;
 import com.rometools.rome.feed.synd.SyndEntry;
 
 @Entity
 public class Entry {
-	@ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+	@ManyToMany(mappedBy="entries", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	private Set<Category> categories = new HashSet<>();
-	private String description;
-	@ManyToOne
+	private String description;;
+
+	@ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	private Feed feed;
+	
 	private String guid;
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
+	
 	private Boolean isRead = false;
-
+	
 	@ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	private Set<Feed> likes = new HashSet<Feed>();
 
@@ -38,8 +43,14 @@ public class Entry {
 
 	private Date pubDate; // Mon, 22 Aug 2016 11:20:33 -0700
 
-	@ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+	@ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+	private Entry reblog;
+
+	@OneToMany(mappedBy="reblog", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	private Set<Entry> reblogs = new HashSet<Entry>();
+	
+	@ManyToMany(mappedBy="entries", cascade = {CascadeType.PERSIST,CascadeType.MERGE })
+	private Set<Tag> tags = new HashSet<Tag>();
 
 	private String title;
 
@@ -51,28 +62,10 @@ public class Entry {
 		this.setDescription(syndEntry.getDescription());
 		this.setFeed(feed);
 		this.setGuid(syndEntry.getUri());
-		this.setLikes(syndEntry);
 		this.setLink(syndEntry.getLink());
 		this.setMedia(media);
 		this.setPubDate(syndEntry.getPublishedDate());
-		this.setReblogs(syndEntry);
 		this.setTitle(syndEntry.getTitle());
-
-	}
-
-	private void setDescription(SyndContent content) {
-		// TODO Auto-generated method stub
-
-	}
-
-	private void setReblogs(SyndEntry syndEntry) {
-		// TODO Auto-generated method stub
-
-	}
-
-	private void setLikes(SyndEntry syndEntry) {
-		// TODO Auto-generated method stub
-
 	}
 
 	public Set<Category> getCategories() {
@@ -95,6 +88,10 @@ public class Entry {
 		return id;
 	}
 
+	public Boolean getIsRead() {
+		return isRead;
+	}
+
 	public Set<Feed> getLikes() {
 		return likes;
 	}
@@ -111,8 +108,16 @@ public class Entry {
 		return pubDate;
 	}
 
+	public Entry getReblog() {
+		return reblog;
+	}
+
 	public Set<Entry> getReblogs() {
 		return reblogs;
+	}
+
+	public Set<Tag> getTags() {
+		return tags;
 	}
 
 	public String getTitle() {
@@ -127,6 +132,11 @@ public class Entry {
 		this.description = description;
 	}
 
+	private void setDescription(SyndContent content) {
+		// TODO Auto-generated method stub
+
+	}
+
 	public void setFeed(Feed feed) {
 		this.feed = feed;
 	}
@@ -139,6 +149,10 @@ public class Entry {
 		this.id = id;
 	}
 
+	public void setIsRead(Boolean isRead) {
+		this.isRead = isRead;
+	}
+
 	public void setLikes(Set<Feed> likes) {
 		this.likes = likes;
 	}
@@ -148,6 +162,8 @@ public class Entry {
 	}
 
 	public void setMedia(Media media) {
+		if(media.getIsRead())
+			this.isRead = true;
 		this.media = media;
 	}
 
@@ -155,19 +171,20 @@ public class Entry {
 		this.pubDate = pubDate;
 	}
 
+	public void setReblog(Entry reblog) {
+		this.reblog = reblog;
+	}
+
 	public void setReblogs(Set<Entry> reblogs) {
 		this.reblogs = reblogs;
 	}
 
+	public void setTags(Set<Tag> tags) {
+		this.tags = tags;
+		// TODO setting tags should trigger finding likes & reblogs
+	}
+
 	public void setTitle(String title) {
 		this.title = title;
-	}
-
-	public Boolean getIsRead() {
-		return isRead;
-	}
-
-	public void setIsRead(Boolean isRead) {
-		this.isRead = isRead;
 	}
 }

@@ -4,10 +4,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 
 import com.rometools.rome.feed.synd.SyndCategory;
 
@@ -28,6 +30,10 @@ public class Category {
 	private String name = "";
 
 	private String taxonomyUri = "";
+	
+	@ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+	private Set<Entry> entries = new HashSet<>();
+
 	public Category() {
 	}
 

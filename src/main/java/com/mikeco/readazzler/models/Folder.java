@@ -10,20 +10,28 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
 
 @Entity
 public class Folder {
+	@ManyToMany(mappedBy="folders", cascade = {CascadeType.PERSIST,CascadeType.MERGE })
+	private Set<Feed> feeds = new HashSet<Feed>();
+	
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	private Long id;
-	@ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE })
-	private Set<Feed> feeds = new HashSet<Feed>();
+	
 	private String label;
-	@ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE })
-	private Set<Folder> subFolders = new HashSet<Folder>();
+	
 	@ManyToOne(cascade = {CascadeType.PERSIST,CascadeType.MERGE })
 	private Folder parentFolder;
+	
+	@OneToMany(mappedBy="parentFolder", cascade = {CascadeType.PERSIST,CascadeType.MERGE })
+	private Set<Folder> subFolders = new HashSet<Folder>();
+	
+	@ManyToOne
+	private User user;
 
 	public Set<Feed> getFeeds() {
 		return feeds;

@@ -9,19 +9,27 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
-
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
 @Entity
 public class Feed {
-	@ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE })
+	@ManyToOne
+	private User user;
+
+	@OneToMany(mappedBy="feed", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	private Set<Entry> entries = new HashSet<>();
-	@ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE })
+	
+	@ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	private Set<Folder> folders = new HashSet<>();
+	
 	@Id
-	@GeneratedValue(strategy=GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
-	@ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE })
+	
+	@OneToMany(mappedBy="likes", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	private Set<Entry> likedEntries = new HashSet<>();
+	
 	private String rssUrl;
 	private String siteUrl;
 	private String title;

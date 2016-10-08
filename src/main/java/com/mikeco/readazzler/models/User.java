@@ -8,18 +8,18 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 
 
 @Entity
 public class User {
-	@ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE })
+	@OneToMany(mappedBy="user", cascade = {CascadeType.PERSIST,CascadeType.MERGE })
 	private Set<Feed> discoveredFeeds = new HashSet<Feed>();
 
-	@ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE })
+	@OneToMany(mappedBy="user", cascade = {CascadeType.PERSIST,CascadeType.MERGE })
 	private Set<Folder> folders = new HashSet<Folder>();
 
-	@ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE })
+	@OneToMany(mappedBy="user", cascade = {CascadeType.PERSIST,CascadeType.MERGE })
 	private Set<Feed> followedFeeds = new HashSet<Feed>();
 	
 	@Id

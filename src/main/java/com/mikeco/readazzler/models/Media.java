@@ -18,7 +18,7 @@ import javax.persistence.UniqueConstraint;
 @Entity
 @Table(uniqueConstraints=@UniqueConstraint(columnNames="link"))
 public class Media {
-	@OneToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE })
+	@OneToMany(mappedBy="media", cascade = {CascadeType.PERSIST,CascadeType.MERGE })
 	private Set<Entry> entries = new HashSet<Entry>();
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
@@ -57,6 +57,7 @@ public class Media {
 	}
 
 	public void setIsRead(Boolean isRead) {
+		// TODO do I want to set this media's entries to read as well?
 		this.isRead = isRead;
 	}
 

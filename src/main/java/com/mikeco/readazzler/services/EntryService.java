@@ -27,6 +27,8 @@ public class EntryService {
 		// This works because I use a Set rather than a List so no duplicates
 		if(entry != null)
 			return entry;
+		
+		//TODO media is going to have to be a list
 		Media media = mediaService.findOrNew(syndEntry.getDescription(), entry);
 		entry = new Entry(syndEntry, media, feed);
 		return entry;

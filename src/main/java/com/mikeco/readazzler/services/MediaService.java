@@ -36,7 +36,11 @@ public class MediaService {
 	 */
 	public Media findOrNew(SyndContent description, Entry entry) {
 		Media media = null;
+		String type = "";
+		String link = "";
+
 		Document doc = Jsoup.parseBodyFragment(description.getValue());
+		//TODO deal with multiple images/videos in the description
 		Elements elements = doc.select("img");
 		if (elements.isEmpty()) {
 			elements = doc.select("video");
@@ -44,21 +48,25 @@ public class MediaService {
 				// We don't know what it is
 				log.warn("findOrNew: Unknown media type: " + description.getValue());
 			} else {
-					// It's a video
-					media = new Media();
-					media.getEntries()
-						.add(entry);
-					media.setLink(elements.get(0).attr("src"));
+				link = elements.get(0)
+					.attr("src");
+				type = "video";
 			}
 		} else {
-			// It's an image
-					media = new Media();
-					media.getEntries()
-						.add(entry);
-					media.setLink(elements.get(0).attr("src"));
+			link = elements.get(0)
+				.attr("src");
+			type = "img";
 		}
-		if(media == null)
-			log.warn("findOrNew: return null media");
+		media = mediaRepo.findSingletonByGuid(link);
+		// Make a new media
+		if (media == null) {
+			media = new Media();
+			media.setLink(link);
+			media.setType(type);
+		}
+		// Add the entry to the media
+		media.getEntries()
+			.add(entry);
 		return media;
 	}
 

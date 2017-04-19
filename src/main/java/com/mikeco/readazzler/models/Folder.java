@@ -15,7 +15,7 @@ import javax.persistence.OneToMany;
 
 @Entity
 public class Folder {
-	@ManyToMany(mappedBy="folders", cascade = {CascadeType.PERSIST,CascadeType.MERGE })
+	@ManyToMany(mappedBy="folders", cascade = { CascadeType.ALL})
 	private Set<Feed> feeds = new HashSet<Feed>();
 	
 	@Id
@@ -24,10 +24,10 @@ public class Folder {
 	
 	private String label;
 	
-	@ManyToOne(cascade = {CascadeType.PERSIST,CascadeType.MERGE })
+	@ManyToOne(cascade = { CascadeType.ALL})
 	private Folder parentFolder;
 	
-	@OneToMany(mappedBy="parentFolder", cascade = {CascadeType.PERSIST,CascadeType.MERGE })
+	@OneToMany(mappedBy="parentFolder", cascade = { CascadeType.ALL})
 	private Set<Folder> subFolders = new HashSet<Folder>();
 	
 	@ManyToOne

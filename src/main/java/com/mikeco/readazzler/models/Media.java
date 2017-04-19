@@ -11,23 +11,55 @@ import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 
-
+import com.rometools.rome.feed.synd.SyndEntry;
 
 @Entity
-@Table(uniqueConstraints=@UniqueConstraint(columnNames="link"))
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = "link"))
 public class Media {
-	@OneToMany(mappedBy="media", cascade = {CascadeType.PERSIST,CascadeType.MERGE })
+	@OneToMany(mappedBy = "media", cascade = { CascadeType.ALL })
 	private Set<Entry> entries = new HashSet<Entry>();
 	@Id
-	@GeneratedValue(strategy=GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
+
 	private Boolean isRead = false;
-	
+
 	private String link;
-	
+
 	private String type;
+	@ManyToMany(mappedBy = "media", cascade = { CascadeType.ALL })
+	private Set<Category> categories = new HashSet<>();
+
+	public Set<Category> getCategories() {
+		return categories;
+	}
+
+	public void setCategories(Set<Category> categories) {
+		this.categories = categories;
+	}
+
+	public void setCategories(SyndEntry syndEntry) {
+		this.setCategories(Category.fromList(syndEntry.getCategories()));
+		for (Category category : this.categories) {
+			category.getMedia()
+				.add(this);
+		}
+
+	}
+
+	@ManyToMany(mappedBy = "media", cascade = { CascadeType.ALL })
+	private Set<Tag> tags = new HashSet<Tag>();
+
+	public Set<Tag> getTags() {
+		return tags;
+	}
+
+	public void setTags(Set<Tag> tags) {
+		this.tags.addAll(tags);
+	}
 
 	public Set<Entry> getEntries() {
 		return entries;
@@ -48,6 +80,7 @@ public class Media {
 	public String getType() {
 		return type;
 	}
+
 	public void setEntries(Set<Entry> entry) {
 		this.entries = entry;
 	}
@@ -57,8 +90,9 @@ public class Media {
 	}
 
 	public void setIsRead(Boolean isRead) {
-		// TODO do I want to set this media's entries to read as well?
 		this.isRead = isRead;
+		for (Entry entry : entries)
+			entry.setIsRead(isRead);
 	}
 
 	public void setLink(String link) {

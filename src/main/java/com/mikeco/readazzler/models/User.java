@@ -13,13 +13,13 @@ import javax.persistence.OneToMany;
 
 @Entity
 public class User {
-	@OneToMany(mappedBy="user", cascade = {CascadeType.PERSIST,CascadeType.MERGE })
+	@OneToMany(mappedBy="user", cascade = { CascadeType.ALL})
 	private Set<Feed> discoveredFeeds = new HashSet<Feed>();
 
-	@OneToMany(mappedBy="user", cascade = {CascadeType.PERSIST,CascadeType.MERGE })
+	@OneToMany(mappedBy="user", cascade = { CascadeType.ALL})
 	private Set<Folder> folders = new HashSet<Folder>();
 
-	@OneToMany(mappedBy="user", cascade = {CascadeType.PERSIST,CascadeType.MERGE })
+	@OneToMany(mappedBy="user", cascade = { CascadeType.ALL})
 	private Set<Feed> followedFeeds = new HashSet<Feed>();
 	
 	@Id

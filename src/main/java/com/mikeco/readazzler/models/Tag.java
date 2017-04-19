@@ -13,16 +13,21 @@ import javax.persistence.ManyToMany;
 
 @Entity
 public class Tag {
-	@ManyToMany(cascade = {CascadeType.PERSIST,CascadeType.MERGE })
-	private Set<Entry> entries = new HashSet<Entry>();;
+	@ManyToMany(cascade = { CascadeType.ALL})
+	private Set<Media> media = new HashSet<>();;
+	public Set<Media> getMedia() {
+		return media;
+	}
+
+	public void setMedia(Set<Media> media) {
+		this.media = media;
+	}
+
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	private Long id;
 	private String label;
 
-	public Set<Entry> getEntries() {
-		return entries;
-	}
 
 	public Long getId() {
 		return id;
@@ -32,9 +37,6 @@ public class Tag {
 		return label;
 	}
 
-	public void setEntries(Set<Entry> entries) {
-		this.entries = entries;
-	}
 
 	public void setId(Long id) {
 		this.id = id;

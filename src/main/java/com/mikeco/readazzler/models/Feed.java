@@ -17,17 +17,17 @@ public class Feed {
 	@ManyToOne
 	private User user;
 
-	@OneToMany(mappedBy="feed", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+	@OneToMany(mappedBy="feed", cascade = { CascadeType.ALL})
 	private Set<Entry> entries = new HashSet<>();
 	
-	@ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+	@ManyToMany(cascade = { CascadeType.ALL})
 	private Set<Folder> folders = new HashSet<>();
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 	
-	@OneToMany(mappedBy="likes", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+	@OneToMany(mappedBy="likes", cascade = { CascadeType.ALL})
 	private Set<Entry> likedEntries = new HashSet<>();
 	
 	private String rssUrl;

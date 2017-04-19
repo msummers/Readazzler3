@@ -1,9 +1,7 @@
 package com.mikeco.readazzler.services;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
@@ -22,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import com.mikeco.readazzler.models.Feed;
+import com.mikeco.readazzler.repositories.EntryRepository;
 import com.mikeco.readazzler.repositories.FeedRepository;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
@@ -35,6 +34,8 @@ public class FeedReader {
 	FeedRepository feedRepo;
 	@Autowired
 	EntryService entryService;
+	@Autowired 
+	EntryRepository entryRepo;
 
 	// Every 10 minutes
 	@Scheduled(fixedDelay = 1000 * 60 * 10)

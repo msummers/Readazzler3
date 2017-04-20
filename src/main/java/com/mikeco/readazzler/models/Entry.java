@@ -1,5 +1,8 @@
 package com.mikeco.readazzler.models;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -12,23 +15,29 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.Transient;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.mikeco.readazzler.siteprocessors.Processor;
 import com.rometools.rome.feed.synd.SyndContent;
 import com.rometools.rome.feed.synd.SyndEntry;
 
 @Entity
 public class Entry {
-
-	@Lob
+	private static final Logger log = LoggerFactory.getLogger(Entry.class);
+	// This is the RSS Description
+	@Transient
 	private String description;
 
 	@ManyToOne(cascade = { CascadeType.ALL })
 	private Feed feed;
-
 	private String guid;
 
 	@Id
@@ -40,11 +49,25 @@ public class Entry {
 	@ManyToMany(cascade = { CascadeType.ALL })
 	private Set<Feed> likes = new HashSet<Feed>();
 
-	private String link;
+	private URL link;
 
-	// TODO An Entry can have more than one media, so this needs to be ManyToMany
-	@ManyToOne(cascade = { CascadeType.ALL })
-	private Media media;
+	@ManyToMany(cascade = { CascadeType.ALL })
+	private Set<Media> media = new HashSet<>();
+
+	// The actual page
+	@Transient
+	private Document page;
+
+	public Document getPage() {
+		if (page == null) {
+			try {
+				page = Jsoup.parse(getLink(), 60);
+			} catch (IOException e) {
+				log.error("getPage: error getting page: {}", getLink(), e);
+			}
+		}
+		return page;
+	}
 
 	private Date pubDate; // Mon, 22 Aug 2016 11:20:33 -0700
 
@@ -56,26 +79,83 @@ public class Entry {
 	private Set<Entry> reblogs = new HashSet<Entry>();
 
 	private String title;
+	@Transient
+	private Processor processor;
 
 	public Entry() {
 	}
 
-	public Entry(SyndEntry syndEntry, Media media, Feed feed) {
-		//this.setDescription(syndEntry.getDescription());
+	public Entry(SyndEntry syndEntry, Set<Media> media, Feed feed) {
+		this.setDescription(syndEntry.getDescription());
 		this.setFeed(feed);
 		this.setGuid(syndEntry.getUri());
-		this.setLink(syndEntry.getLink());
+		try {
+			this.setLink(new URL(syndEntry.getLink()));
+		} catch (MalformedURLException e) {
+			log.error("Entry: syndEntry.getLink: invalid URL: %s", syndEntry.getLink(), e);
+		}
 		this.setMedia(media);
-		media.getEntries()
-			.add(this);
-		media.setCategories(syndEntry);
+		for (Media m : media) {
+			m.getEntries()
+				.add(this);
+			m.setCategories(syndEntry);
+			this.isRead = m.getIsRead();
+		}
 		this.setPubDate(syndEntry.getPublishedDate());
 		this.setTitle(syndEntry.getTitle());
-		this.isRead = media.getIsRead();
+	}
+
+	public void enrich() {
+		// TODO if I propagate enrich this is the trigger
+		this.getLikes()
+			.addAll(this.findLikes());
+		this.getReblogs()
+			.addAll(this.findReblogs());
+		// TODO find source
+		// TODO process path
+
+	}
+
+	public Collection<? extends Feed> findLikes() {
+		// TODO find Likes associated with this Entry
+		// Get the page source
+		// Parse the likes, this is source specific
+		return null;
+	}
+
+	public Collection<? extends Entry> findReblogs() {
+		// TODO find Reblogs associated with this Entry
+		// Get the page source
+		// Parse the reblogs, this is source specific
+
+		return null;
+	}
+
+	public List<Entry> findSource() {
+		// TODO find this Entries' source(s)
+		List<Entry> parents = new ArrayList<>();
+		return parents;
+	}
+
+	public List<Entry> findTrail() {
+		// TODO the path this entry took to get here if any.
+		// This comes from parsing the <a> tags in the description
+		List<Entry> parents = new ArrayList<>();
+		return parents;
 	}
 
 	public String getDescription() {
+		if (description == null) {
+			description = getProcessor().getDescription(getPage());
+		}
 		return description;
+	}
+
+	private Processor getProcessor() {
+		if (processor == null) {
+			processor = Processor.fromURL(getLink());
+		}
+		return processor;
 	}
 
 	public Feed getFeed() {
@@ -98,11 +178,11 @@ public class Entry {
 		return likes;
 	}
 
-	public String getLink() {
+	public URL getLink() {
 		return link;
 	}
 
-	public Media getMedia() {
+	public Set<Media> getMedia() {
 		return media;
 	}
 
@@ -122,11 +202,19 @@ public class Entry {
 		return title;
 	}
 
+	private boolean mediaIsTagged() {
+		for (Media m : media)
+			if (!m.getTags()
+				.isEmpty())
+				return true;
+		return false;
+	}
+
 	public void setDescription(String description) {
 		this.description = description;
 	}
 
-	private void setDescription(SyndContent syndContent) {
+	public void setDescription(SyndContent syndContent) {
 		this.description = syndContent.getValue();
 	}
 
@@ -144,19 +232,22 @@ public class Entry {
 
 	public void setIsRead(Boolean isRead) {
 		this.isRead = isRead;
+		if (isRead && mediaIsTagged())
+			enrich();
 	}
 
 	public void setLikes(Set<Feed> likes) {
 		this.likes = likes;
 	}
 
-	public void setLink(String link) {
+	public void setLink(URL link) {
 		this.link = link;
 	}
 
-	public void setMedia(Media media) {
-		this.isRead = media.getIsRead();
-		this.media = media;
+	public void setMedia(Set<Media> media) {
+		if (media.size() >= 1)
+			this.isRead = (media.toArray(new Media[0]))[0].getIsRead();
+		this.media.addAll(media);
 	}
 
 	public void setPubDate(Date pubDate) {
@@ -172,33 +263,12 @@ public class Entry {
 	}
 
 	public void setTags(Set<Tag> tags) {
-		// TODO setting tags should trigger finding likes & reblogs
-		this.media.setTags(tags);
-		if(!tags.isEmpty()){
-			this.getLikes().addAll(this.findLikes());
-			this.getReblogs().addAll(this.findReblogs());
-		}
-	}
-
-	public Collection<? extends Entry> findReblogs() {
-		// TODO find Reblogs associated with this Entry
-		// Get the page source
-		// Parse the reblogs, this is source specific
-		
-		return null;
-	}
-	
-	public List<Entry> findSource(){
-		// TODO find this Entries' source(s)
-		List<Entry> parents = new ArrayList<>();
-		return parents;
-	}
-
-	public Collection<? extends Feed> findLikes() {
-		// TODO find Likes associated with this Entry
-		// Get the page source
-		// Parse the likes, this is source specific
-		return null;
+		// Tags are kept on the media, but they'll be 'set' in the ui on an Entry
+		// (and perhaps a media)
+		for (Media m : media)
+			m.setTags(tags);
+		if (!tags.isEmpty())
+			enrich();
 	}
 
 	public void setTitle(String title) {

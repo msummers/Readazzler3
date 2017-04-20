@@ -2,7 +2,6 @@ package com.mikeco.readazzler.services;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -13,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,7 +46,7 @@ public class FeedReader {
 				.iterator().next()
 				.getLabel()));
 			try {
-				URL feedUrl = new URL(feed.getRssUrl());
+				//URL feedUrl = new URL(feed.getRssUrl());
 
 				CloseableHttpClient httpClient = HttpClientBuilder.create()
 					.build();
@@ -56,7 +54,7 @@ public class FeedReader {
 
 				// This is due to Spring not following https redirects
 				RestTemplate restTemplate = new RestTemplate();
-				SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+				//SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
 				restTemplate.setRequestFactory(factory);
 				
 				ResponseEntity<String> response = restTemplate.getForEntity(feed.getRssUrl(), String.class);

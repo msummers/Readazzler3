@@ -9,9 +9,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 
 import com.rometools.rome.feed.synd.SyndEntry;
@@ -19,7 +17,7 @@ import com.rometools.rome.feed.synd.SyndEntry;
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = "link"))
 public class Media {
-	@OneToMany(mappedBy = "media", cascade = { CascadeType.ALL })
+	@ManyToMany(mappedBy = "media", cascade = { CascadeType.ALL })
 	private Set<Entry> entries = new HashSet<Entry>();
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)

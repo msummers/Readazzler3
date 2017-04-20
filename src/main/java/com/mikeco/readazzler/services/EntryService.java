@@ -1,15 +1,15 @@
 package com.mikeco.readazzler.services;
 
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.mikeco.readazzler.models.Category;
 import com.mikeco.readazzler.models.Entry;
 import com.mikeco.readazzler.models.Feed;
 import com.mikeco.readazzler.models.Media;
-import com.mikeco.readazzler.repositories.CategoryRepository;
 import com.mikeco.readazzler.repositories.EntryRepository;
 import com.rometools.rome.feed.synd.SyndEntry;
 
@@ -28,8 +28,7 @@ public class EntryService {
 		if(entry != null)
 			return entry;
 		
-		//TODO media is going to have to be a list
-		Media media = mediaService.findOrNew(syndEntry.getDescription(), entry);
+		Set<Media> media = mediaService.findOrNew(syndEntry.getDescription(), entry);
 		entry = new Entry(syndEntry, media, feed);
 		return entry;
 	}

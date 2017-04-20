@@ -1,8 +1,11 @@
 package com.mikeco.readazzler.services;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
+import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,40 +37,32 @@ public class MediaService {
 	 * src="http://ffloridabifreak.tumblr.com/video_file/t:ACRWJNBQoSyhEqcxHp446A/151417043477/tumblr_o2733dWGJA1th4h7i" type="video/mp4"> </video> <br/><br/>
 	 * </description>
 	 */
-	public Media findOrNew(SyndContent description, Entry entry) {
-		Media media = null;
-		String type = "";
-		String link = "";
-
+	public Set<Media> findOrNew(SyndContent description, Entry entry) {
+		Set<Media> result = new HashSet<>();
 		Document doc = Jsoup.parseBodyFragment(description.getValue());
-		//TODO deal with multiple images/videos in the description
-		Elements elements = doc.select("img");
-		if (elements.isEmpty()) {
-			elements = doc.select("video");
-			if (elements.isEmpty()) {
-				// We don't know what it is
-				log.warn("findOrNew: Unknown media type: " + description.getValue());
-			} else {
-				link = elements.get(0)
-					.attr("src");
-				type = "video";
-			}
-		} else {
-			link = elements.get(0)
-				.attr("src");
-			type = "img";
-		}
-		media = mediaRepo.findSingletonByGuid(link);
-		// Make a new media
-		if (media == null) {
-			media = new Media();
-			media.setLink(link);
-			media.setType(type);
-		}
-		// Add the entry to the media
-		media.getEntries()
-			.add(entry);
-		return media;
+		result.addAll(processMedia(doc, entry, "img"));
+		result.addAll(processMedia(doc, entry, "source"));
+		if (result.size() <= 0)
+			log.warn("findOrNew: Unknown media type: " + description.getValue());
+		return result;
 	}
 
+	private Set<Media> processMedia(Document doc, Entry entry, String type) {
+		Set<Media> result = new HashSet<>();
+		for (Element element : doc.select(type)) {
+			String link = element.attr("src");
+			Media media = mediaRepo.findSingletonByGuid(link);
+			// Make a new media
+			if (media == null) {
+				media = new Media();
+				media.setLink(link);
+				media.setType(type);
+			}
+			// Add the entry to the media
+			media.getEntries()
+				.add(entry);
+			result.add(media);
+		}
+		return result;
+	}
 }

@@ -104,9 +104,9 @@ public class OpmlImport {
 			String type = nnm.getNamedItem("type")
 				.getFirstChild()
 				.getTextContent();
-			String text = nnm.getNamedItem("text")
-				.getFirstChild()
-				.getTextContent();
+//			String text = nnm.getNamedItem("text")
+//				.getFirstChild()
+//				.getTextContent();
 			String title = nnm.getNamedItem("title")
 				.getFirstChild()
 				.getTextContent();
@@ -147,9 +147,9 @@ public class OpmlImport {
 			NodeList nl = document.getElementsByTagName("outline");
 			Node n = nl.item(0);
 			NamedNodeMap nnm = n.getAttributes();
-			String text = nnm.getNamedItem("text")
-				.getFirstChild()
-				.getTextContent();
+//			String text = nnm.getNamedItem("text")
+//				.getFirstChild()
+//				.getTextContent();
 			String label = nnm.getNamedItem("title")
 				.getFirstChild()
 				.getTextContent();
